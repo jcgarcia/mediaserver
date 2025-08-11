@@ -1,0 +1,143 @@
+---
+# ansible/playbooks/deploy.yml
+- name: Deploy MediaServer Infrastructure and Application
+  hosts: localhost
+  gather_facts: false
+  vars:
+    project_name: "{{ project_name | default('mediaserver') }}"
+    aws_region: "{{ aws_region | default('eu-west-2') }}"
+    environment: "{{ environment | default('production') }}"
+    
+  tasks:
+    - name: Check if Terraform is installed
+      command: terraform version
+      register: terraform_version
+      failed_when: false
+      changed_when: false
+
+    - name: Fail if Terraform is not installed
+      fail:
+        msg: "Terraform is required but not installed"
+      when: terraform_version.rc != 0
+
+    - name: Check if Docker is installed
+      command: docker version
+      register: docker_version
+      failed_when: false
+      changed_when: false
+
+    - name: Fail if Docker is not installed
+      fail:
+        msg: "Docker is required but not installed"
+      when: docker_version.rc != 0
+
+    - name: Initialize Terraform
+      terraform:
+        project_path: "{{ playbook_dir }}/../../terraform"
+        state: present
+        force_init: true
+      register: terraform_init
+
+    - name: Plan Terraform deployment
+      terraform:
+        project_path: "{{ playbook_dir }}/../../terraform"
+        state: planned
+        plan_file: terraform.plan
+      register: terraform_plan
+
+    - name: Show Terraform plan
+      debug:
+        msg: "{{ terraform_plan.stdout }}"
+
+    - name: Apply Terraform configuration
+      terraform:
+        project_path: "{{ playbook_dir }}/../../terraform"
+        state: present
+        plan_file: terraform.plan
+      register: terraform_apply
+
+    - name: Get Terraform outputs
+      terraform:
+        project_path: "{{ playbook_dir }}/../../terraform"
+        state: present
+      register: terraform_outputs
+
+    - name: Set facts from Terraform outputs
+      set_fact:
+        ecr_repository_url: "{{ terraform_outputs.outputs.ecr_repository_url.value }}"
+        s3_bucket_name: "{{ terraform_outputs.outputs.s3_bucket_name.value }}"
+        ecs_cluster_name: "{{ terraform_outputs.outputs.ecs_cluster_name.value }}"
+        ecs_service_name: "{{ terraform_outputs.outputs.ecs_service_name.value }}"
+
+    - name: Login to ECR
+      shell: |
+        aws ecr get-login-password --region {{ aws_region }} | \
+        docker login --username AWS --password-stdin {{ ecr_repository_url }}
+      register: ecr_login
+
+    - name: Build Docker image
+      docker_image:
+        build:
+          path: "{{ playbook_dir }}/../.."
+          dockerfile: Dockerfile
+        name: "{{ project_name }}"
+        tag: latest
+        source: build
+        force_source: true
+
+    - name: Tag Docker image for ECR
+      docker_image:
+        name: "{{ project_name }}:latest"
+        repository: "{{ ecr_repository_url }}:latest"
+        source: local
+
+    - name: Push Docker image to ECR
+      docker_image:
+        name: "{{ ecr_repository_url }}:latest"
+        push: true
+        source: local
+
+    - name: Force new deployment of ECS service
+      ecs_service:
+        name: "{{ ecs_service_name }}"
+        cluster: "{{ ecs_cluster_name }}"
+        force_new_deployment: true
+        state: present
+        region: "{{ aws_region }}"
+
+    - name: Wait for ECS service to be stable
+      ecs_service_info:
+        name: "{{ ecs_service_name }}"
+        cluster: "{{ ecs_cluster_name }}"
+        region: "{{ aws_region }}"
+      register: service_info
+      until: service_info.services[0].deployments[0].status == "PRIMARY"
+      retries: 30
+      delay: 30
+
+    - name: Get ECS task public IPs
+      ecs_task_info:
+        cluster: "{{ ecs_cluster_name }}"
+        service: "{{ ecs_service_name }}"
+        region: "{{ aws_region }}"
+      register: task_info
+
+    - name: Display deployment summary
+      debug:
+        msg: |
+          Deployment completed successfully!
+          
+          Infrastructure:
+          - S3 Bucket: {{ s3_bucket_name }}
+          - ECS Cluster: {{ ecs_cluster_name }}
+          - ECS Service: {{ ecs_service_name }}
+          - ECR Repository: {{ ecr_repository_url }}
+          
+          Application:
+          - Running Tasks: {{ task_info.tasks | length }}
+          - Service Status: {{ service_info.services[0].status }}
+          
+          Next Steps:
+          1. Check service health: curl http://[TASK_IP]:3000/health
+          2. View logs: aws logs tail /ecs/{{ project_name }} --follow
+          3. Monitor: aws ecs describe-services --cluster {{ ecs_cluster_name }} --services {{ ecs_service_name }}

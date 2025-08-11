@@ -1,0 +1,23 @@
+# terraform/terraform.tfvars.example
+# Copy this file to terraform.tfvars and customize the values
+
+# AWS Configuration
+aws_region = "eu-west-2"
+environment = "production"
+project_name = "mediaserver"
+
+# ECS Configuration
+container_cpu = 256
+container_memory = 512
+desired_count = 2
+container_port = 3000
+
+# Security Configuration
+allowed_cidr_blocks = ["0.0.0.0/0"]  # Restrict this in production
+
+# S3 Configuration
+enable_s3_versioning = true
+s3_bucket_force_destroy = false  # Set to true for development/testing
+
+# Monitoring Configuration
+log_retention_days = 30

@@ -1,0 +1,56 @@
+---
+# ansible/playbooks/destroy.yml
+- name: Destroy MediaServer Infrastructure
+  hosts: localhost
+  gather_facts: false
+  vars:
+    project_name: "{{ project_name | default('mediaserver') }}"
+    aws_region: "{{ aws_region | default('eu-west-2') }}"
+    force_destroy: "{{ force_destroy | default(false) }}"
+
+  tasks:
+    - name: Confirm destruction
+      pause:
+        prompt: "Are you sure you want to destroy all MediaServer infrastructure? Type 'yes' to continue"
+      register: confirmation
+      when: not force_destroy
+
+    - name: Check confirmation
+      fail:
+        msg: "Destruction cancelled"
+      when: not force_destroy and confirmation.user_input != "yes"
+
+    - name: Scale ECS service to 0
+      ecs_service:
+        name: "{{ project_name }}-service"
+        cluster: "{{ project_name }}-cluster"
+        desired_count: 0
+        region: "{{ aws_region }}"
+        state: present
+      ignore_errors: true
+
+    - name: Wait for tasks to stop
+      pause:
+        seconds: 60
+
+    - name: Destroy Terraform infrastructure
+      terraform:
+        project_path: "{{ playbook_dir }}/../../terraform"
+        state: absent
+        force_init: true
+      register: terraform_destroy
+
+    - name: Display destruction summary
+      debug:
+        msg: |
+          Infrastructure destruction completed!
+          
+          Destroyed resources:
+          - ECS Cluster and Service
+          - S3 Bucket (if force_destroy was enabled)
+          - CloudWatch Log Groups
+          - IAM Roles and Policies
+          - Security Groups
+          - SSM Parameters
+          
+          Note: ECR repository may still exist if it contains images.

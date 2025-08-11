@@ -1,0 +1,78 @@
+---
+# ansible/playbooks/manage.yml
+- name: Manage MediaServer Application
+  hosts: localhost
+  gather_facts: false
+  vars:
+    project_name: "{{ project_name | default('mediaserver') }}"
+    aws_region: "{{ aws_region | default('eu-west-2') }}"
+    action: "{{ action | default('status') }}"  # status, scale, restart, logs
+    
+  tasks:
+    - name: Get current ECS service status
+      ecs_service_info:
+        name: "{{ project_name }}-service"
+        cluster: "{{ project_name }}-cluster"
+        region: "{{ aws_region }}"
+      register: service_info
+      when: action in ['status', 'scale', 'restart']
+
+    - name: Display service status
+      debug:
+        msg: |
+          Service Status: {{ service_info.services[0].status }}
+          Desired Count: {{ service_info.services[0].desired_count }}
+          Running Count: {{ service_info.services[0].running_count }}
+          Pending Count: {{ service_info.services[0].pending_count }}
+          Task Definition: {{ service_info.services[0].task_definition }}
+      when: action == 'status'
+
+    - name: Scale ECS service
+      ecs_service:
+        name: "{{ project_name }}-service"
+        cluster: "{{ project_name }}-cluster"
+        desired_count: "{{ desired_count | default(2) }}"
+        region: "{{ aws_region }}"
+        state: present
+      when: action == 'scale' and desired_count is defined
+
+    - name: Restart ECS service
+      ecs_service:
+        name: "{{ project_name }}-service"
+        cluster: "{{ project_name }}-cluster"
+        force_new_deployment: true
+        region: "{{ aws_region }}"
+        state: present
+      when: action == 'restart'
+
+    - name: Get recent logs
+      shell: |
+        aws logs tail /ecs/{{ project_name }} --since 1h --region {{ aws_region }}
+      register: recent_logs
+      when: action == 'logs'
+
+    - name: Display recent logs
+      debug:
+        msg: "{{ recent_logs.stdout }}"
+      when: action == 'logs'
+
+    - name: Get ECS task information
+      ecs_task_info:
+        cluster: "{{ project_name }}-cluster"
+        service: "{{ project_name }}-service"
+        region: "{{ aws_region }}"
+      register: task_info
+      when: action == 'status'
+
+    - name: Display task information
+      debug:
+        msg: |
+          Running Tasks: {{ task_info.tasks | length }}
+          {% for task in task_info.tasks %}
+          Task {{ loop.index }}:
+            - ARN: {{ task.task_arn }}
+            - Status: {{ task.last_status }}
+            - Health: {{ task.health_status | default('N/A') }}
+            - CPU/Memory: {{ task.cpu }}/{{ task.memory }}
+          {% endfor %}
+      when: action == 'status' and task_info.tasks | length > 0
