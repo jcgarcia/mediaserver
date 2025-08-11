@@ -10,6 +10,7 @@
     "docker:build": "docker build -t mediaserver .",
     "docker:run": "docker run -p 3000:3000 mediaserver"
   },
+  "packageManager": "pnpm@8.0.0",
   "dependencies": {
     "express": "^4.18.2",
     "aws-sdk": "^2.1471.0",

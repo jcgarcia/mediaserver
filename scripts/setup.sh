@@ -58,6 +58,14 @@ else
     print_status "AWS CLI: $(aws --version)"
 fi
 
+# Check pnpm
+if ! command -v pnpm &> /dev/null; then
+    print_warning "pnpm not found. Installing..."
+    npm install -g pnpm
+else
+    print_status "pnpm: $(pnpm --version)"
+fi
+
 # Check Terraform
 if ! command -v terraform &> /dev/null; then
     print_warning "Terraform not found. Installing..."
@@ -76,7 +84,7 @@ fi
 
 # Install Node.js dependencies
 print_status "Installing Node.js dependencies..."
-npm install
+pnpm install
 
 # Install Ansible dependencies
 print_status "Installing Ansible collections..."

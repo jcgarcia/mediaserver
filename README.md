@@ -62,7 +62,7 @@ A scalable, cloud-native media server built for AWS deployment with support for 
 
 2. **Install dependencies**:
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. **Configure environment**:
@@ -73,7 +73,7 @@ A scalable, cloud-native media server built for AWS deployment with support for 
 
 4. **Start development server**:
    ```bash
-   npm run dev
+   pnpm dev
    ```
 
 ## Docker Deployment
@@ -93,7 +93,7 @@ A scalable, cloud-native media server built for AWS deployment with support for 
 ### Prerequisites
 - AWS CLI configured with appropriate permissions
 - Docker installed
-- Node.js 18+ for local development
+- Node.js 18+ with pnpm package manager for local development
 
 ### Deploy to AWS ECS
 
