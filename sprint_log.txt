@@ -1,0 +1,1 @@
+JENKINS_OIDC_PROJECT_SETUP.md: Updated with explicit required AWS policies for Jenkins OIDC deployment.
