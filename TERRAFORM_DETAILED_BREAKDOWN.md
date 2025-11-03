@@ -184,14 +184,20 @@ resource "aws_s3_bucket" "media_storage" {
 
 ### Encryption Configuration:
 ```hcl
-resource "aws_s3_bucket_server_side_encryption_configuration" "media_storage" {
+# S3 bucket lifecycle configuration
+resource "aws_s3_bucket_lifecycle_configuration" "media_storage" {
   bucket = aws_s3_bucket.media_storage.id
+
   rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
+    id     = "media_lifecycle"
+    status = "Enabled"
+    
+    filter {}  # Required empty filter for AWS provider v5.x
+
+    # Delete incomplete multipart uploads after 7 days
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
     }
-  }
-}
 ```
 
 **What this means:**

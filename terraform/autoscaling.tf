@@ -33,11 +33,6 @@ resource "aws_appautoscaling_policy" "scale_up" {
       scaling_adjustment          = 1
     }
   }
-
-  tags = {
-    Name        = "${var.project_name}-scale-up-policy"
-    Environment = var.environment
-  }
 }
 
 # Auto Scaling Policy - Scale Down
@@ -57,11 +52,6 @@ resource "aws_appautoscaling_policy" "scale_down" {
       metric_interval_upper_bound = 0
       scaling_adjustment          = -1
     }
-  }
-
-  tags = {
-    Name        = "${var.project_name}-scale-down-policy"
-    Environment = var.environment
   }
 }
 

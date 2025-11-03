@@ -65,6 +65,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "media_storage" {
   rule {
     id     = "media_lifecycle"
     status = "Enabled"
+    
+    filter {}
 
     # Delete incomplete multipart uploads after 7 days
     abort_incomplete_multipart_upload {
