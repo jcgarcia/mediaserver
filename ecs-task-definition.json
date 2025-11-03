@@ -6,12 +6,12 @@
   ],
   "cpu": "256",
   "memory": "512",
-  "executionRoleArn": "arn:aws:iam::007041844937:role/ecsTaskExecutionRole",
-  "taskRoleArn": "arn:aws:iam::007041844937:role/ecsTaskRole",
+  "executionRoleArn": "arn:aws:iam::<YOUR-ACCOUNT-ID>:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::<YOUR-ACCOUNT-ID>:role/ecsTaskRole",
   "containerDefinitions": [
     {
       "name": "mediaserver",
-      "image": "007041844937.dkr.ecr.eu-west-2.amazonaws.com/mediaserver:latest",
+      "image": "<YOUR-ACCOUNT-ID>.dkr.ecr.eu-west-2.amazonaws.com/mediaserver:latest",
       "portMappings": [
         {
           "containerPort": 3000,
@@ -40,7 +40,7 @@
       "secrets": [
         {
           "name": "JWT_SECRET",
-          "valueFrom": "arn:aws:ssm:eu-west-2:007041844937:parameter/mediaserver/jwt-secret"
+          "valueFrom": "arn:aws:ssm:eu-west-2:<YOUR-ACCOUNT-ID>:parameter/mediaserver/jwt-secret"
         }
       ],
       "logConfiguration": {

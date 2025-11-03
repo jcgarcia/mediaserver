@@ -32,7 +32,7 @@ A scalable, cloud-native media server built for AWS deployment with support for 
 ## AWS Resources Created
 
 - **S3 Bucket**: `mediaserver-storage-[timestamp]` (to be created)
-- **ECR Repository**: `007041844937.dkr.ecr.eu-west-2.amazonaws.com/mediaserver`
+- **ECR Repository**: `<YOUR-ACCOUNT-ID>.dkr.ecr.eu-west-2.amazonaws.com/mediaserver`
 - **ECS Cluster**: `mediaserver-cluster` (to be created)
 
 ## API Endpoints
@@ -100,14 +100,14 @@ A scalable, cloud-native media server built for AWS deployment with support for 
 1. **Build and push Docker image**:
    ```bash
    # Get ECR login token
-   aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 007041844937.dkr.ecr.eu-west-2.amazonaws.com
+   aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin <YOUR-ACCOUNT-ID>.dkr.ecr.eu-west-2.amazonaws.com
 
    # Build and tag image
    docker build -t mediaserver .
-   docker tag mediaserver:latest 007041844937.dkr.ecr.eu-west-2.amazonaws.com/mediaserver:latest
+   docker tag mediaserver:latest <YOUR-ACCOUNT-ID>.dkr.ecr.eu-west-2.amazonaws.com/mediaserver:latest
 
    # Push to ECR
-   docker push 007041844937.dkr.ecr.eu-west-2.amazonaws.com/mediaserver:latest
+   docker push <YOUR-ACCOUNT-ID>.dkr.ecr.eu-west-2.amazonaws.com/mediaserver:latest
    ```
 
 2. **Create ECS Task Definition**:
