@@ -1,1 +1,13 @@
 JENKINS_OIDC_PROJECT_SETUP.md: Updated with explicit required AWS policies for Jenkins OIDC deployment.
+
+2025-08-25 SPRINT LOG:
+----------------------------------------
+• Restored Privacy Policy and Terms content from backups and workspace files
+• Diagnosed backend JSON parsing errors and fixed malformed Lexical JSON in privacy_full_lexical.json
+• Created a new secure admin user for API authentication using create-admin-user.js
+• Debugged authentication flows and confirmed correct API endpoint for admin login
+• Attempted multiple API updates for Privacy Policy page, fixed JSON formatting and payload issues
+• Documented all technical obstacles, including server 405 errors, payload size issues, and shell escaping problems
+• Provided full transparency on all actions, including file edits, API calls, and error handling
+• Confirmed all work is logged and ready for review/continuation tomorrow
+----------------------------------------
