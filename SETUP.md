@@ -36,7 +36,7 @@ Once services are activated, run:
 ## 📋 What the Deployment Script Will Create
 
 ### **AWS Resources:**
-- ✅ **ECR Repository**: `007041844937.dkr.ecr.eu-west-2.amazonaws.com/mediaserver` (already created)
+- ✅ **ECR Repository**: `<YOUR-ACCOUNT-ID>.dkr.ecr.eu-west-2.amazonaws.com/mediaserver` (to be created)
 - 🔄 **S3 Bucket**: `mediaserver-storage-[timestamp]` (for media files)
 - 🔄 **ECS Cluster**: `mediaserver-cluster` (for container orchestration)
 - 🔄 **IAM Roles**: `ecsTaskExecutionRole` and `ecsTaskRole` (for permissions)
