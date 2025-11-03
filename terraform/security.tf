@@ -5,13 +5,13 @@ resource "aws_security_group" "ecs_tasks" {
   description = "Security group for ${var.project_name} ECS tasks"
   vpc_id      = data.aws_vpc.default.id
 
-  # Allow inbound traffic on container port
+  # Allow inbound traffic from ALB
   ingress {
-    description = "HTTP traffic"
-    from_port   = var.container_port
-    to_port     = var.container_port
-    protocol    = "tcp"
-    cidr_blocks = var.allowed_cidr_blocks
+    description     = "HTTP traffic from ALB"
+    from_port       = var.container_port
+    to_port         = var.container_port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb.id]
   }
 
   # Allow all outbound traffic

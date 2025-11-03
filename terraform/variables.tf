@@ -64,3 +64,27 @@ variable "log_retention_days" {
   type        = number
   default     = 30
 }
+
+variable "min_capacity" {
+  description = "Minimum number of ECS tasks for auto scaling"
+  type        = number
+  default     = 1
+}
+
+variable "max_capacity" {
+  description = "Maximum number of ECS tasks for auto scaling"
+  type        = number
+  default     = 10
+}
+
+variable "enable_deletion_protection" {
+  description = "Enable deletion protection for ALB"
+  type        = bool
+  default     = false
+}
+
+variable "ssl_certificate_arn" {
+  description = "ARN of SSL certificate for HTTPS listener (optional)"
+  type        = string
+  default     = ""
+}

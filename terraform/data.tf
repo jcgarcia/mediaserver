@@ -18,7 +18,4 @@ data "aws_subnets" "default" {
   }
 }
 
-# Get the ECR repository that was created manually
-data "aws_ecr_repository" "mediaserver" {
-  name = var.project_name
-}
+# Note: ECR repository is now created in ecr.tf

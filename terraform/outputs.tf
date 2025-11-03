@@ -36,7 +36,7 @@ output "ecs_service_name" {
 
 output "ecr_repository_url" {
   description = "URL of the ECR repository"
-  value       = data.aws_ecr_repository.mediaserver.repository_url
+  value       = aws_ecr_repository.mediaserver.repository_url
 }
 
 output "task_definition_arn" {
@@ -79,4 +79,34 @@ output "environment_variables" {
     NODE_ENV       = var.environment
     PORT           = var.container_port
   }
+}
+
+output "alb_dns_name" {
+  description = "DNS name of the load balancer"
+  value       = aws_lb.mediaserver.dns_name
+}
+
+output "alb_zone_id" {
+  description = "Zone ID of the load balancer"
+  value       = aws_lb.mediaserver.zone_id
+}
+
+output "alb_arn" {
+  description = "ARN of the load balancer"
+  value       = aws_lb.mediaserver.arn
+}
+
+output "target_group_arn" {
+  description = "ARN of the target group"
+  value       = aws_lb_target_group.mediaserver.arn
+}
+
+output "ecr_repository_arn" {
+  description = "ARN of the ECR repository"
+  value       = aws_ecr_repository.mediaserver.arn
+}
+
+output "application_url" {
+  description = "URL to access the application"
+  value       = "http://${aws_lb.mediaserver.dns_name}"
 }

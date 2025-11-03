@@ -39,7 +39,7 @@ resource "aws_ecs_task_definition" "mediaserver" {
   container_definitions = jsonencode([
     {
       name  = var.project_name
-      image = "${data.aws_ecr_repository.mediaserver.repository_url}:latest"
+      image = "${aws_ecr_repository.mediaserver.repository_url}:latest"
       
       portMappings = [
         {
@@ -117,10 +117,12 @@ resource "aws_ecs_service" "mediaserver" {
     assign_public_ip = true
   }
 
-  # Enable service discovery (optional)
-  # service_registries {
-  #   registry_arn = aws_service_discovery_service.mediaserver.arn
-  # }
+  # Load balancer configuration
+  load_balancer {
+    target_group_arn = aws_lb_target_group.mediaserver.arn
+    container_name   = var.project_name
+    container_port   = var.container_port
+  }
 
   # Deployment configuration
   deployment_configuration {
@@ -137,6 +139,7 @@ resource "aws_ecs_service" "mediaserver" {
 
   depends_on = [
     aws_iam_role_policy_attachment.ecs_task_execution_role_policy,
-    aws_cloudwatch_log_group.ecs_logs
+    aws_cloudwatch_log_group.ecs_logs,
+    aws_lb_listener.mediaserver
   ]
 }
